@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Tax Advisor Demo - Gemini Flash 2.0 Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container-fluid {
+            background: rgba(255, 255, 255, 0.95);
+            min-height: 100vh;
+            backdrop-filter: blur(10px);
+        }
+        
+        .ai-response {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .ai-response .bg-light {
+            background: rgba(255, 255, 255, 0.98) !important;
+            color: #1a252f !important;
+            border: 1px solid rgba(0,0,0,0.2);
+            font-size: 15px;
+            line-height: 1.7;
+            font-weight: 600;
+        }
+        
+        .suggestion-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #28a745;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            color: #333;
+            transition: transform 0.2s ease;
+        }
+        
+        .suggestion-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        
+        .suggestion-description {
+            color: #2c3e50;
+            line-height: 1.7;
+            margin-bottom: 12px;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .suggestion-meta .badge {
+            font-size: 0.75rem;
+            padding: 5px 8px;
+        }
+        
+        .regime-comparison {
+            background: linear-gradient(135deg, #8e44ad 0%, #9b59b6 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.25);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        
+        .regime-comparison .bg-light {
+            background: rgba(255, 255, 255, 0.98) !important;
+            color: #1a252f !important;
+            border: 1px solid rgba(0,0,0,0.2);
+            font-size: 15px;
+            line-height: 1.7;
+            font-weight: 600;
+        }
+        
+        .chat-message {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 15px 0;
+            border-left: 5px solid #007bff;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            color: #333;
+        }
+        
+        .chat-message .bg-light {
+            background: rgba(255, 255, 255, 0.98) !important;
+            color: #1a252f !important;
+            border: 1px solid #bdc3c7;
+            font-size: 15px;
+            line-height: 1.7;
+            font-weight: 600;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 30px;
+            color: #667eea;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+        
+        .status-online { background-color: #28a745; }
+        .status-offline { background-color: #dc3545; }
+        
+        .metric-card {
+            background: linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 10px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            text-align: center;
+            border: 1px solid rgba(0,0,0,0.05);
+            transition: transform 0.2s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+            transition: transform 0.2s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(0,0,0,0.15);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 12px 12px 0 0 !important;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .btn {
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            border: none;
+        }
+        
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+        
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
+            padding: 10px 15px;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .accordion-button {
+            border-radius: 8px;
+            font-weight: 500;
+        }
+        
+        .accordion-button:not(.collapsed) {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .navbar-brand {
+            font-weight: 600;
+            font-size: 1.3rem;
+        }
+        
+        .alert {
+            border-radius: 10px;
+            border: none;
+            padding: 15px 20px;
+        }
+        
+        .text-response {
+            background: rgba(255, 255, 255, 0.98);
+            color: #2c3e50;
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(0,0,0,0.1);
+            font-size: 15px;
+            line-height: 1.7;
+            max-height: 400px;
+            overflow-y: auto;
+            font-weight: 500;
+        }
+        
+        .response-section {
+            margin-top: 20px;
+        }
+        
+        .response-section h6 {
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+        
+        .section-header {
+            color: #2980b9 !important;
+            font-weight: 700;
+            border-bottom: 3px solid #2980b9;
+            padding-bottom: 8px;
+            margin-bottom: 15px !important;
+            font-size: 16px;
+        }
+        
+        .main-header {
+            color: #c0392b !important;
+            font-weight: 800;
+            margin-bottom: 18px !important;
+            font-size: 18px;
+        }
+        
+        .suggestion-item {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px 20px;
+            border-radius: 8px;
+            border-left: 4px solid #f39c12;
+            margin-bottom: 12px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .suggestion-number {
+            background: #f39c12;
+            color: white;
+            padding: 3px 8px;
+            border-radius: 50%;
+            font-weight: bold;
+            font-size: 12px;
+            margin-right: 10px;
+        }
+        
+        .bullet-item {
+            padding: 8px 0;
+            margin-left: 15px;
+            color: #2c3e50;
+            font-weight: 500;
+            font-size: 15px;
+        }
+        
+        .text-response strong {
+            color: #1a252f;
+            font-weight: 700;
+        }
+        
+        .text-response em {
+            color: #34495e;
+            font-style: italic;
+            font-weight: 500;
+        }
+        
+        /* Force all text in response areas to be dark and readable */
+        .text-response, 
+        .text-response *, 
+        .ai-response .bg-light,
+        .ai-response .bg-light *,
+        .regime-comparison .bg-light,
+        .regime-comparison .bg-light *,
+        .chat-message .bg-light,
+        .chat-message .bg-light * {
+            color: #1a252f !important;
+            font-weight: 500 !important;
+        }
+        
+        .text-response strong,
+        .ai-response .bg-light strong,
+        .regime-comparison .bg-light strong,
+        .chat-message .bg-light strong {
+            color: #0d1117 !important;
+            font-weight: 700 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <!-- Header -->
+            <div class="col-12">
+                <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+                    <div class="container">
+                        <a class="navbar-brand" href="#">
+                            <i class="fas fa-robot"></i> AI Tax Advisor Demo
+                        </a>
+                        <div class="navbar-nav ms-auto">
+                            <div class="nav-item">
+                                <span class="nav-link">
+                                    <span id="serviceStatus" class="status-indicator status-offline"></span>
+                                    <span id="serviceStatusText">Checking...</span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                </nav>
+            </div>
+        </div>
+
+        <div class="row mt-4">
+            <!-- Left Panel - Controls -->
+            <div class="col-md-4">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-cogs"></i> AI Service Controls</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Service Status -->
+                        <div class="mb-3">
+                            <button class="btn btn-info w-100" onclick="checkServiceStatus()">
+                                <i class="fas fa-heartbeat"></i> Check Service Status
+                            </button>
+                        </div>
+                        
+                        <!-- Test Connection -->
+                        <div class="mb-3">
+                            <button class="btn btn-success w-100" onclick="testConnection()">
+                                <i class="fas fa-plug"></i> Test API Connection
+                            </button>
+                        </div>
+
+                        <!-- Sample Data Forms -->
+                        <div class="accordion" id="demoAccordion">
+                            <!-- Tax Suggestions Form -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#taxSuggestionsForm">
+                                        <i class="fas fa-lightbulb"></i> &nbsp; Tax Suggestions
+                                    </button>
+                                </h2>
+                                <div id="taxSuggestionsForm" class="accordion-collapse collapse show">
+                                    <div class="accordion-body">
+                                        <form id="taxSuggestionsFormData">
+                                            <h6 class="text-primary mb-3"><i class="fas fa-user"></i> Personal Information</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Age</label>
+                                                    <input type="number" class="form-control" name="age" value="30" min="18" max="100">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Marital Status</label>
+                                                    <select class="form-control" name="marital_status">
+                                                        <option value="Single">Single</option>
+                                                        <option value="Married">Married</option>
+                                                        <option value="Divorced">Divorced</option>
+                                                        <option value="Widowed">Widowed</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Number of Dependents</label>
+                                                    <input type="number" class="form-control" name="dependents" value="0" min="0" max="10">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">City Type</label>
+                                                    <select class="form-control" name="city_type">
+                                                        <option value="Metro">Metro (Mumbai, Delhi, Chennai, Kolkata)</option>
+                                                        <option value="Non-Metro">Non-Metro City</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">City</label>
+                                                <input type="text" class="form-control" name="city" value="Mumbai">
+                                            </div>
+
+                                            <h6 class="text-primary mb-3 mt-4"><i class="fas fa-money-bill-wave"></i> Salary Information</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Gross Annual Salary (₹)</label>
+                                                    <input type="number" class="form-control" name="gross_salary" value="900000" min="0">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Basic Salary (₹)</label>
+                                                    <input type="number" class="form-control" name="basic_salary" value="600000" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">HRA (₹)</label>
+                                                    <input type="number" class="form-control" name="hra" value="240000" min="0">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Other Allowances (₹)</label>
+                                                    <input type="number" class="form-control" name="other_allowances" value="60000" min="0">
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Monthly Rent Paid (₹)</label>
+                                                    <input type="number" class="form-control" name="rent_paid" value="25000" min="0">
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Bonus/Variable Pay (₹)</label>
+                                                    <input type="number" class="form-control" name="bonus" value="0" min="0">
+                                                </div>
+                                            </div>
+
+                                            <h6 class="text-primary mb-3 mt-4"><i class="fas fa-chart-line"></i> Current Investments & Deductions</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Section 80C Investments (₹)</label>
+                                                    <input type="number" class="form-control" name="section_80c_current" value="80000" min="0" max="150000">
+                                                    <small class="text-muted">PPF, ELSS, NSC, Home Loan Principal, etc.</small>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Health Insurance Premium (₹)</label>
+                                                    <input type="number" class="form-control" name="health_insurance" value="15000" min="0">
+                                                    <small class="text-muted">Section 80D - Self & Family</small>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Home Loan Interest (₹)</label>
+                                                    <input type="number" class="form-control" name="home_loan_interest" value="0" min="0">
+                                                    <small class="text-muted">Section 24(b)</small>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Education Loan Interest (₹)</label>
+                                                    <input type="number" class="form-control" name="education_loan_interest" value="0" min="0">
+                                                    <small class="text-muted">Section 80E</small>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">NPS Contribution (₹)</label>
+                                                    <input type="number" class="form-control" name="nps_contribution" value="0" min="0">
+                                                    <small class="text-muted">Section 80CCD(1B)</small>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Donations (₹)</label>
+                                                    <input type="number" class="form-control" name="donations" value="0" min="0">
+                                                    <small class="text-muted">Section 80G</small>
+                                                </div>
+                                            </div>
+
+                                            <h6 class="text-primary mb-3 mt-4"><i class="fas fa-bullseye"></i> Financial Goals & Preferences</h6>
+                                            <div class="mb-2">
+                                                <label class="form-label">Primary Financial Goals</label>
+                                                <textarea class="form-control" name="financial_goals" rows="2" placeholder="e.g., Home purchase in 5 years, Child education, Retirement planning">Home purchase in 5 years, Retirement planning</textarea>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Risk Appetite</label>
+                                                    <select class="form-control" name="risk_appetite">
+                                                        <option value="Conservative">Conservative</option>
+                                                        <option value="Moderate" selected>Moderate</option>
+                                                        <option value="Aggressive">Aggressive</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Investment Experience</label>
+                                                    <select class="form-control" name="investment_experience">
+                                                        <option value="Beginner">Beginner</option>
+                                                        <option value="Intermediate" selected>Intermediate</option>
+                                                        <option value="Advanced">Advanced</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Monthly Surplus for Investment (₹)</label>
+                                                <input type="number" class="form-control" name="monthly_surplus" value="20000" min="0">
+                                                <small class="text-muted">Amount available for new investments</small>
+                                            </div>
+
+                                            <h6 class="text-primary mb-3 mt-4"><i class="fas fa-home"></i> Additional Information</h6>
+                                            <div class="row">
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Do you own a house?</label>
+                                                    <select class="form-control" name="house_ownership">
+                                                        <option value="No">No</option>
+                                                        <option value="Yes - Self Occupied">Yes - Self Occupied</option>
+                                                        <option value="Yes - Rented Out">Yes - Rented Out</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6 mb-2">
+                                                    <label class="form-label">Parents' Age</label>
+                                                    <select class="form-control" name="parents_age">
+                                                        <option value="Below 60">Below 60</option>
+                                                        <option value="Above 60">Above 60 (Senior Citizens)</option>
+                                                        <option value="Not Applicable">Not Applicable</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+
+                                            <button type="button" class="btn btn-primary w-100 mt-3" onclick="generateTaxSuggestions()">
+                                                <i class="fas fa-magic"></i> Generate Personalized Tax Suggestions
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Regime Comparison Form -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#regimeComparisonForm">
+                                        <i class="fas fa-balance-scale"></i> &nbsp; Regime Comparison
+                                    </button>
+                                </h2>
+                                <div id="regimeComparisonForm" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        <form id="regimeComparisonFormData">
+                                            <div class="mb-2">
+                                                <label class="form-label">Gross Salary (₹)</label>
+                                                <input type="number" class="form-control" name="gross_salary" value="900000">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Section 80C (₹)</label>
+                                                <input type="number" class="form-control" name="section_80c" value="80000">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Section 80D (₹)</label>
+                                                <input type="number" class="form-control" name="section_80d" value="15000">
+                                            </div>
+                                            <div class="mb-2">
+                                                <label class="form-label">Home Loan Interest (₹)</label>
+                                                <input type="number" class="form-control" name="home_loan_interest" value="0">
+                                            </div>
+                                            <button type="button" class="btn btn-warning w-100" onclick="compareRegimes()">
+                                                <i class="fas fa-chart-bar"></i> Compare Regimes
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Chat Interface -->
+                            <div class="accordion-item">
+                                <h2 class="accordion-header">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#chatForm">
+                                        <i class="fas fa-comments"></i> &nbsp; AI Chat
+                                    </button>
+                                </h2>
+                                <div id="chatForm" class="accordion-collapse collapse">
+                                    <div class="accordion-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Ask AI Tax Advisor</label>
+                                            <textarea class="form-control" id="chatQuery" rows="3" placeholder="e.g., How can I save more tax with my current income?">How can I save more tax with my current income of ₹9 lakhs?</textarea>
+                                        </div>
+                                        <button type="button" class="btn btn-info w-100" onclick="chatWithAI()">
+                                            <i class="fas fa-paper-plane"></i> Send Message
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel - Results -->
+            <div class="col-md-8">
+                <div class="card">
+                    <div class="card-header">
+                        <h5><i class="fas fa-chart-line"></i> AI Response Dashboard</h5>
+                    </div>
+                    <div class="card-body">
+                        <!-- Loading Indicator -->
+                        <div id="loadingIndicator" class="loading">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                            <p class="mt-2">AI is thinking... Please wait</p>
+                        </div>
+
+                        <!-- Results Container -->
+                        <div id="resultsContainer">
+                            <div class="text-center" style="padding: 40px 20px; color: #667eea;">
+                                <i class="fas fa-robot fa-4x mb-4" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;"></i>
+                                <h4 style="color: #667eea; font-weight: 600;">Welcome to AI Tax Advisor Demo</h4>
+                                <p style="color: #6c757d; font-size: 16px; margin-top: 15px;">
+                                    Powered by <strong>Gemini Flash 2.0 Pro</strong><br>
+                                    Use the controls on the left to test different AI features
+                                </p>
+                                <div class="mt-4">
+                                    <span class="badge bg-primary me-2">Tax Suggestions</span>
+                                    <span class="badge bg-warning me-2">Regime Comparison</span>
+                                    <span class="badge bg-info">AI Chat</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Performance Metrics -->
+                        <div id="metricsContainer" style="display: none;">
+                            <h6 class="mt-4"><i class="fas fa-tachometer-alt"></i> Performance Metrics</h6>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <div class="h4 text-primary" id="responseTime">-</div>
+                                        <small>Response Time (s)</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <div class="h4 text-success" id="tokensUsed">-</div>
+                                        <small>Tokens Used</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <div class="h4 text-info" id="confidenceScore">-</div>
+                                        <small>Confidence %</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="metric-card">
+                                        <div class="h4 text-warning" id="responseType">-</div>
+                                        <small>Response Type</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Generate unique session ID
+        const sessionId = 'demo_' + Math.random().toString(36).substr(2, 9);
+
+        // Utility functions
+        function showLoading() {
+            document.getElementById('loadingIndicator').style.display = 'block';
+            document.getElementById('resultsContainer').innerHTML = '';
+        }
+
+        function hideLoading() {
+            document.getElementById('loadingIndicator').style.display = 'none';
+        }
+
+        function showError(message) {
+            hideLoading();
+            document.getElementById('resultsContainer').innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i> Error: ${message}
+                </div>
+            `;
+        }
+
+        function updateMetrics(response) {
+            document.getElementById('responseTime').textContent = response.processing_time?.toFixed(2) || '-';
+            document.getElementById('tokensUsed').textContent = response.tokens_used || '-';
+            document.getElementById('confidenceScore').textContent = ((response.confidence_score || 0) * 100).toFixed(1) + '%';
+            document.getElementById('responseType').textContent = response.response_type || '-';
+            document.getElementById('metricsContainer').style.display = 'block';
+        }
+
+        function cleanAIResponse(text) {
+            if (!text) return '';
+            
+            return text
+                // Remove excessive asterisks and formatting markers
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*([^*]+)\*/g, '<em>$1</em>')
+                .replace(/\*\*\*/g, '')
+                .replace(/\*\*/g, '')
+                .replace(/\*/g, '')
+                
+                // Clean up section headers
+                .replace(/##\s*([^\n]+)/g, '<h6 class="section-header mt-4 mb-3">$1</h6>')
+                .replace(/#\s*([^\n]+)/g, '<h5 class="main-header mt-4 mb-3">$1</h5>')
+                
+                // Format numbered lists better
+                .replace(/(\d+)\.\s*([^\n]+)/g, '<div class="suggestion-item mb-3"><span class="suggestion-number">$1</span> $2</div>')
+                
+                // Format bullet points
+                .replace(/•\s*([^\n]+)/g, '<div class="bullet-item mb-2">• $1</div>')
+                .replace(/-\s*([^\n]+)/g, '<div class="bullet-item mb-2">• $1</div>')
+                
+                // Handle table-like content with dashes
+                .replace(/[-]{5,}/g, '<hr style="border: 2px solid #bdc3c7; margin: 15px 0;">')
+                
+                // Format currency amounts
+                .replace(/₹(\d+(?:,\d+)*)/g, '<span style="font-weight: 700; color: #27ae60; font-size: 16px;">₹$1</span>')
+                
+                // Clean up extra spaces and line breaks
+                .replace(/\n\s*\n/g, '<br><br>')
+                .replace(/\n/g, '<br>')
+                .replace(/\s+/g, ' ')
+                .trim();
+        }
+
+        // API Functions
+        async function checkServiceStatus() {
+            try {
+                showLoading();
+                const response = await fetch('/api/ai/status');
+                const data = await response.json();
+                
+                hideLoading();
+                
+                // Update status indicator
+                const statusIndicator = document.getElementById('serviceStatus');
+                const statusText = document.getElementById('serviceStatusText');
+                
+                if (data.is_available) {
+                    statusIndicator.className = 'status-indicator status-online';
+                    statusText.textContent = 'Online';
+                } else {
+                    statusIndicator.className = 'status-indicator status-offline';
+                    statusText.textContent = 'Offline';
+                }
+
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="ai-response">
+                        <h5><i class="fas fa-server"></i> Service Status</h5>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>Status:</strong> ${data.is_available ? '🟢 Online' : '🔴 Offline'}<br>
+                                <strong>Model:</strong> ${data.model_name}<br>
+                                <strong>Requests/Min:</strong> ${data.rate_limits.current_minute_requests}/${data.rate_limits.requests_per_minute}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>Requests/Hour:</strong> ${data.rate_limits.current_hour_requests}/${data.rate_limits.requests_per_hour}<br>
+                                <strong>Max Tokens:</strong> ${data.configuration.max_tokens}<br>
+                                <strong>Temperature:</strong> ${data.configuration.temperature}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function testConnection() {
+            try {
+                showLoading();
+                const response = await fetch('/api/ai/test-connection', { method: 'POST' });
+                const data = await response.json();
+                
+                hideLoading();
+                
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="ai-response">
+                        <h5><i class="fas fa-plug"></i> Connection Test</h5>
+                        <div class="alert ${data.success ? 'alert-success' : 'alert-danger'}">
+                            <strong>Result:</strong> ${data.success ? '✅ Success' : '❌ Failed'}<br>
+                            ${data.response_time ? `<strong>Response Time:</strong> ${data.response_time.toFixed(2)}s<br>` : ''}
+                            ${data.tokens_used ? `<strong>Tokens Used:</strong> ${data.tokens_used}<br>` : ''}
+                            ${data.error ? `<strong>Error:</strong> ${data.error}` : ''}
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function generateTaxSuggestions() {
+            try {
+                showLoading();
+                
+                const formData = new FormData(document.getElementById('taxSuggestionsFormData'));
+                const requestData = {
+                    session_id: sessionId
+                };
+                
+                // Process all form data with proper type conversion
+                for (let [key, value] of formData.entries()) {
+                    if (['age', 'dependents'].includes(key)) {
+                        requestData[key] = parseInt(value) || 0;
+                    } else if ([
+                        'gross_salary', 'basic_salary', 'hra', 'other_allowances', 'rent_paid', 'bonus',
+                        'section_80c_current', 'health_insurance', 'home_loan_interest', 'education_loan_interest',
+                        'nps_contribution', 'donations', 'monthly_surplus'
+                    ].includes(key)) {
+                        requestData[key] = parseFloat(value) || 0;
+                    } else {
+                        requestData[key] = value;
+                    }
+                }
+                
+                // Calculate derived values
+                requestData.current_deductions = (requestData.section_80c_current || 0) + 
+                                               (requestData.health_insurance || 0) + 
+                                               (requestData.nps_contribution || 0);
+                
+                requestData.net_salary = (requestData.gross_salary || 0) - (requestData.current_deductions || 0);
+                
+                // Build current investments string
+                let investments = [];
+                if (requestData.section_80c_current > 0) investments.push(`Section 80C: ₹${requestData.section_80c_current.toLocaleString()}`);
+                if (requestData.health_insurance > 0) investments.push(`Health Insurance: ₹${requestData.health_insurance.toLocaleString()}`);
+                if (requestData.nps_contribution > 0) investments.push(`NPS: ₹${requestData.nps_contribution.toLocaleString()}`);
+                if (requestData.home_loan_interest > 0) investments.push(`Home Loan Interest: ₹${requestData.home_loan_interest.toLocaleString()}`);
+                requestData.current_investments = investments.length > 0 ? investments.join(', ') : 'None specified';
+
+                const response = await fetch('/api/ai/tax-suggestions', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                updateMetrics(data);
+
+                let suggestionsHtml = '';
+                if (data.suggestions && data.suggestions.length > 0) {
+                    suggestionsHtml = data.suggestions.map((suggestion, index) => `
+                        <div class="suggestion-card">
+                            <div class="d-flex align-items-center mb-2">
+                                <span class="suggestion-number">${index + 1}</span>
+                                <h6 class="mb-0"><i class="fas fa-lightbulb me-2"></i>${cleanAIResponse(suggestion.title || 'Tax Suggestion')}</h6>
+                            </div>
+                            <div class="suggestion-description">${cleanAIResponse(suggestion.description || '')}</div>
+                            <div class="suggestion-meta mt-3">
+                                <span class="badge bg-primary me-2">${suggestion.category || 'General'}</span>
+                                <span class="badge bg-secondary me-2">Priority: ${suggestion.priority || 'Medium'}</span>
+                                ${suggestion.potential_savings ? `<span class="badge bg-success">Savings: ₹${suggestion.potential_savings.toLocaleString()}</span>` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                }
+
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="ai-response">
+                        <h5><i class="fas fa-magic"></i> Tax Savings Suggestions</h5>
+                        <div class="mb-3">
+                            <strong>Success:</strong> ${data.success ? '✅ Yes' : '❌ No'}<br>
+                            <strong>Confidence:</strong> ${(data.confidence_score * 100).toFixed(1)}%
+                        </div>
+                        ${suggestionsHtml}
+                        ${data.action_items ? `
+                            <div class="mt-3">
+                                <h6>Action Items:</h6>
+                                <ul>
+                                    ${data.action_items.map(item => `<li>${item}</li>`).join('')}
+                                </ul>
+                            </div>
+                        ` : ''}
+                        <div class="response-section">
+                            <h6>Full AI Response:</h6>
+                            <div class="text-response">
+                                ${cleanAIResponse(data.content)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function compareRegimes() {
+            try {
+                showLoading();
+                
+                const formData = new FormData(document.getElementById('regimeComparisonFormData'));
+                const requestData = {
+                    session_id: sessionId,
+                    basic_salary: 600000,
+                    hra: 240000,
+                    other_allowances: 60000,
+                    other_deductions: 0,
+                    age: 30,
+                    city: 'Mumbai',
+                    rent_paid: 25000
+                };
+                
+                // Add form data
+                for (let [key, value] of formData.entries()) {
+                    requestData[key] = parseFloat(value);
+                }
+
+                const response = await fetch('/api/ai/regime-comparison', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                updateMetrics(data);
+
+                let comparisonHtml = '';
+                if (data.regime_comparison) {
+                    const comp = data.regime_comparison;
+                    comparisonHtml = `
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>Old Regime</h5>
+                                        <div class="h3 text-primary">₹${comp.old_regime_tax?.toLocaleString() || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card">
+                                    <div class="card-body text-center">
+                                        <h5>New Regime</h5>
+                                        <div class="h3 text-success">₹${comp.new_regime_tax?.toLocaleString() || 'N/A'}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3 text-center">
+                            <h5>Recommended: ${comp.recommended_regime}</h5>
+                            <p>Potential Savings: ₹${comp.savings_difference?.toLocaleString() || 'N/A'}</p>
+                        </div>
+                    `;
+                }
+
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="regime-comparison">
+                        <h5><i class="fas fa-balance-scale"></i> Tax Regime Comparison</h5>
+                        <div class="mb-3">
+                            <strong>Success:</strong> ${data.success ? '✅ Yes' : '❌ No'}<br>
+                            <strong>Confidence:</strong> ${(data.confidence_score * 100).toFixed(1)}%
+                        </div>
+                        ${comparisonHtml}
+                        <div class="response-section">
+                            <h6>Full AI Analysis:</h6>
+                            <div class="text-response">
+                                ${cleanAIResponse(data.content)}
+                            </div>
+                        </div>
+                    </div>
+                `;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        async function chatWithAI() {
+            try {
+                showLoading();
+                
+                const query = document.getElementById('chatQuery').value;
+                const requestData = {
+                    user_query: query,
+                    session_id: sessionId,
+                    previous_context: 'Demo session',
+                    user_profile: 'Demo user testing AI integration'
+                };
+
+                const response = await fetch('/api/ai/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestData)
+                });
+                
+                const data = await response.json();
+                hideLoading();
+                updateMetrics(data);
+
+                document.getElementById('resultsContainer').innerHTML = `
+                    <div class="chat-message">
+                        <h5><i class="fas fa-comments"></i> AI Chat Response</h5>
+                        <div class="mb-3">
+                            <strong>Your Question:</strong> ${query}<br>
+                            <strong>Success:</strong> ${data.success ? '✅ Yes' : '❌ No'}<br>
+                            <strong>Confidence:</strong> ${(data.confidence_score * 100).toFixed(1)}%
+                        </div>
+                        <div class="text-response">
+                            ${cleanAIResponse(data.content)}
+                        </div>
+                        ${data.disclaimers ? `
+                            <div class="mt-3">
+                                <small class="text-muted">
+                                    <strong>Disclaimers:</strong><br>
+                                    ${data.disclaimers.map(d => `• ${d}`).join('<br>')}
+                                </small>
+                            </div>
+                        ` : ''}
+                    </div>
+                `;
+            } catch (error) {
+                showError(error.message);
+            }
+        }
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            checkServiceStatus();
+        });
+    </script>
+</body>
+</html> 

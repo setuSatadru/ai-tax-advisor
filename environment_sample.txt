@@ -1,0 +1,44 @@
+# Tax Advisor Application - Environment Configuration
+# Copy this file to .env to configure your local development environment
+
+# Database Configuration
+DATABASE_TYPE=sqlite
+DATABASE_URL=sqlite:///./local_database.db
+SESSION_TIMEOUT_HOURS=24
+
+# Application Settings
+DEBUG=true
+SECRET_KEY=your-secret-key-change-in-production
+
+# File Upload Settings
+UPLOAD_DIR=uploads/sessions
+MAX_FILE_SIZE=10485760
+
+# Future PostgreSQL settings (for production deployment)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_USER=postgres
+POSTGRES_PASSWORD=
+POSTGRES_DB=tax_advisor
+
+# AI/LLM Configuration - Gemini Flash 2.0 Pro
+GEMINI_API_KEY=your-gemini-api-key-here
+GEMINI_MODEL=gemini-2.0-flash-exp
+GEMINI_MAX_TOKENS=8192
+GEMINI_TEMPERATURE=0.7
+
+# API Rate Limiting
+GEMINI_REQUESTS_PER_MINUTE=60
+GEMINI_REQUESTS_PER_HOUR=1000
+GEMINI_MAX_RETRIES=3
+GEMINI_RETRY_DELAY=1
+
+# Logging Configuration
+LOG_LEVEL=INFO
+LOG_FILE=logs/tax_advisor.log
+
+# Note: Create your .env file by copying this template:
+# cp environment_sample.txt .env
+# 
+# Then edit the values as needed for your local development
+# Make sure to set your actual GEMINI_API_KEY from Google AI Studio 

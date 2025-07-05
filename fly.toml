@@ -1,0 +1,30 @@
+app = "ai-tax-advisor"
+primary_region = "sjc"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  GEMINI_MODEL = "gemini-2.0-flash-exp"
+  GEMINI_MAX_TOKENS = "8192"
+  GEMINI_TEMPERATURE = "0.7"
+  GEMINI_REQUESTS_PER_MINUTE = "15"
+  GEMINI_REQUESTS_PER_HOUR = "900"
+  DEBUG = "false"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = true
+  auto_start_machines = true
+  min_machines_running = 0
+  processes = ["app"]
+
+[[vm]]
+  cpu_kind = "shared"
+  cpus = 1
+  memory_mb = 256
+
+[mounts]
+  source = "logs_volume"
+  destination = "/app/logs" 
